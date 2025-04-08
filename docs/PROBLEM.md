@@ -1,7 +1,5 @@
 # Build Your Own wc Tool
 
-TODO: Create class Design
-
 This challenge has been taken from Coding challenges FYI site present 
 [here](https://codingchallenges.fyi/challenges/challenge-wc).
 
