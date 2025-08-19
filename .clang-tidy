@@ -1,7 +1,3 @@
----
-# Clang-Tidy Configuration File
-# Place this file as .clang-tidy in your project root directory
-
 Checks: >
   bugprone-*,
   cert-*,
@@ -14,18 +10,20 @@ Checks: >
   portability-*,
   readability-*
 
-# Treat clang-tidy warnings as errors (optional - remove if too strict)
-WarningsAsErrors: ''
+WarningsAsErrors: >
+  bugprone-*,
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*
 
-# Header filter - adjust path pattern to match your project structure
 HeaderFilterRegex: '.*'
+SystemHeaders: false
+UseColor: true
+FormatStyle: file
 
-# Analysis timeout in seconds
-AnalyzeTemporaryDtors: false
-
-# Configure specific checks
 CheckOptions:
-  # Readability options
+  # ---------- Naming convention (consistency > personal taste) ----------
   - key: readability-identifier-naming.NamespaceCase
     value: lower_case
   - key: readability-identifier-naming.ClassCase
@@ -48,70 +46,41 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.MacroCase
     value: UPPER_CASE
-  
-  # Performance options
-  - key: performance-for-range-copy.WarnOnAllAutoCopies
-    value: true
-  - key: performance-unnecessary-value-param.AllowedTypes
-    value: ''
-  
-  # Modernize options
+
+  # ---------- Modernization (force C++20 idioms) ----------
+  - key: modernize-use-nullptr.NullMacros
+    value: 'NULL'
   - key: modernize-loop-convert.MaxCopySize
     value: 16
   - key: modernize-loop-convert.MinConfidence
     value: reasonable
   - key: modernize-pass-by-value.IncludeStyle
     value: llvm
-  - key: modernize-replace-auto-ptr.IncludeStyle
-    value: llvm
-  - key: modernize-use-nullptr.NullMacros
-    value: 'NULL'
-  
-  # Core Guidelines options
-  - key: cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
+
+  # ---------- Bugprone settings (HFT: every crash = $$$) ----------
+  - key: bugprone-string-constructor.WarnOnLargeLength
     value: true
-  - key: cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
-    value: true
+  # - key: bugprone-string-constructor.LargeLengthThreshold
+  #   value: 8388608
+  - key: bugprone-assert-side-effect.AssertMacros
+    value: assert,NSAssert,NSCAssert
+
+  # ---------- Core guidelines tuning ----------
   - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
     value: true
   - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
+    value: false   # enforce move, copies are dangerous in HFT
+
+  # ---------- Performance strictness ----------
+  - key: performance-for-range-copy.WarnOnAllAutoCopies
     value: true
-  
-  # Bugprone options
-  - key: bugprone-argument-comment.StrictMode
-    value: false
-  - key: bugprone-assert-side-effect.AssertMacros
-    value: assert,NSAssert,NSCAssert
-  - key: bugprone-string-constructor.WarnOnLargeLength
-    value: true
-  - key: bugprone-string-constructor.LargeLengthThreshold
-    value: 0x800000
-  
-  # CERT options
-  - key: cert-dcl16-c.NewSuffixes
-    value: 'L;LL;LU;LLU'
-  - key: cert-oop54-cpp.WarnOnlyIfThisHasSuspiciousField
-    value: false
-  
-  # HICPP options (mostly inherit from cppcoreguidelines)
+  - key: performance-unnecessary-value-param.AllowedTypes
+    value: ''
+
+  # ---------- HICPP complexity thresholds (discipline) ----------
   - key: hicpp-function-size.LineThreshold
     value: 80
   - key: hicpp-function-size.StatementThreshold
-    value: 800
+    value: 400
   - key: hicpp-function-size.BranchThreshold
     value: 20
-  - key: hicpp-function-size.ParameterThreshold
-    value: 10
-  - key: hicpp-function-size.NestingThreshold
-    value: 10
-  - key: hicpp-function-size.VariableThreshold
-    value: 50
-
-# System headers to ignore (adjust for your system)
-SystemHeaders: false
-
-# Use color output
-UseColor: true
-
-# Format style for fix suggestions
-FormatStyle: file

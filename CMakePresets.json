@@ -1,17 +1,86 @@
 {
     "version": 8,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 20
+    },
     "configurePresets": [
         {
-            "name": "clang-preset",
-            "displayName": "Clang 20.1.7 arm64-apple-darwin24.5.0",
-            "description": "Using compilers: C = /opt/homebrew/opt/ccache/libexec/clang, CXX = /opt/homebrew/opt/ccache/libexec/clang++",
+            "name": "base",
+            "hidden": true,
+            "generator": "Ninja",
             "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "installDir": "${sourceDir}/out/install/${presetName}",
             "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
-                "CMAKE_C_COMPILER": "/opt/homebrew/opt/ccache/libexec/clang",
-                "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/ccache/libexec/clang++",
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+                "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
             }
+        },
+        {
+            "name": "clang-debug",
+            "inherits": "base",
+            "displayName": "Clang Debug",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm/bin/clang",
+                "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm/bin/clang++",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_FLAGS": "-O0 -g3 -fno-omit-frame-pointer",
+                "CMAKE_CXX_CLANG_TIDY": "clang-tidy;-p=${sourceDir};--warnings-as-errors=*"
+            }
+        },
+        {
+            "name": "clang-release",
+            "inherits": "base",
+            "displayName": "Clang Release",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm/bin/clang",
+                "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm/bin/clang++",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_CXX_FLAGS": "-O3 -march=native -DNDEBUG -flto"
+            }
+        },
+        {
+            "name": "clang-asan",
+            "inherits": "base",
+            "displayName": "Clang Debug + ASan+UBSan",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm/bin/clang",
+                "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm/bin/clang++",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_FLAGS": "-O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined",
+                "CMAKE_CXX_CLANG_TIDY": "clang-tidy;-p=${sourceDir};--warnings-as-errors=*"
+            }
+        },
+        {
+            "name": "clang-tsan",
+            "inherits": "base",
+            "displayName": "Clang Debug + TSan",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "/opt/homebrew/opt/llvm/bin/clang",
+                "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm/bin/clang++",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_FLAGS": "-O1 -g -fno-omit-frame-pointer -fsanitize=thread",
+                "CMAKE_CXX_CLANG_TIDY": "clang-tidy;-p=${sourceDir};--warnings-as-errors=*"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "clang-debug-build",
+            "configurePreset": "clang-debug"
+        },
+        {
+            "name": "clang-release-build",
+            "configurePreset": "clang-release"
+        },
+        {
+            "name": "clang-asan-build",
+            "configurePreset": "clang-asan"
+        },
+        {
+            "name": "clang-tsan-build",
+            "configurePreset": "clang-tsan"
         }
     ]
 }
