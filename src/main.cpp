@@ -1,5 +1,7 @@
 #include <iostream>
 
-int main(int, char**){
+auto main(int argc, char **argv) -> int
+{
     std::cout << "Hello, from ccwc!\n";
+    return 0;
 }
