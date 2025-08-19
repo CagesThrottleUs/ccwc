@@ -1,0 +1,117 @@
+---
+# Clang-Tidy Configuration File
+# Place this file as .clang-tidy in your project root directory
+
+Checks: >
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+  hicpp-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*
+
+# Treat clang-tidy warnings as errors (optional - remove if too strict)
+WarningsAsErrors: ''
+
+# Header filter - adjust path pattern to match your project structure
+HeaderFilterRegex: '.*'
+
+# Analysis timeout in seconds
+AnalyzeTemporaryDtors: false
+
+# Configure specific checks
+CheckOptions:
+  # Readability options
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.VariableCase
+    value: camelBack
+  - key: readability-identifier-naming.ParameterCase
+    value: camelBack
+  - key: readability-identifier-naming.MemberCase
+    value: camelBack
+  - key: readability-identifier-naming.PrivateMemberPrefix
+    value: m_
+  - key: readability-identifier-naming.ConstantCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.MacroCase
+    value: UPPER_CASE
+  
+  # Performance options
+  - key: performance-for-range-copy.WarnOnAllAutoCopies
+    value: true
+  - key: performance-unnecessary-value-param.AllowedTypes
+    value: ''
+  
+  # Modernize options
+  - key: modernize-loop-convert.MaxCopySize
+    value: 16
+  - key: modernize-loop-convert.MinConfidence
+    value: reasonable
+  - key: modernize-pass-by-value.IncludeStyle
+    value: llvm
+  - key: modernize-replace-auto-ptr.IncludeStyle
+    value: llvm
+  - key: modernize-use-nullptr.NullMacros
+    value: 'NULL'
+  
+  # Core Guidelines options
+  - key: cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
+    value: true
+  - key: cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value: true
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: true
+  - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
+    value: true
+  
+  # Bugprone options
+  - key: bugprone-argument-comment.StrictMode
+    value: false
+  - key: bugprone-assert-side-effect.AssertMacros
+    value: assert,NSAssert,NSCAssert
+  - key: bugprone-string-constructor.WarnOnLargeLength
+    value: true
+  - key: bugprone-string-constructor.LargeLengthThreshold
+    value: 0x800000
+  
+  # CERT options
+  - key: cert-dcl16-c.NewSuffixes
+    value: 'L;LL;LU;LLU'
+  - key: cert-oop54-cpp.WarnOnlyIfThisHasSuspiciousField
+    value: false
+  
+  # HICPP options (mostly inherit from cppcoreguidelines)
+  - key: hicpp-function-size.LineThreshold
+    value: 80
+  - key: hicpp-function-size.StatementThreshold
+    value: 800
+  - key: hicpp-function-size.BranchThreshold
+    value: 20
+  - key: hicpp-function-size.ParameterThreshold
+    value: 10
+  - key: hicpp-function-size.NestingThreshold
+    value: 10
+  - key: hicpp-function-size.VariableThreshold
+    value: 50
+
+# System headers to ignore (adjust for your system)
+SystemHeaders: false
+
+# Use color output
+UseColor: true
+
+# Format style for fix suggestions
+FormatStyle: file
