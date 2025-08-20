@@ -105,6 +105,9 @@ $ wc -wc test.txt test2.txt
    58164  342190 test2.txt
   116328  684380 total
 
+$ wc -wl test.txt 
+    7145   58164 test.txt
+
 $ cat test.txt | wc test2.txt
     7145   58164  342190 test2.txt
 
