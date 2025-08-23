@@ -1,6 +1,8 @@
 #ifndef CCWC_ALGORITHM_UNIVERSAL_INPUT_STREAM_HPP
 #define CCWC_ALGORITHM_UNIVERSAL_INPUT_STREAM_HPP
 
+#include "exception/exception.hpp"
+
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -36,7 +38,7 @@ namespace ccwc::algorithm
             std::ifstream fileStream(filename, std::ios::binary);
             if (!fileStream.is_open())
             {
-                throw std::runtime_error("Cannot open file: " + filename);
+                throw ccwc::exception::FileOperationException("Cannot open file: " + filename);
             }
             m_stream = std::move(fileStream);
         }
