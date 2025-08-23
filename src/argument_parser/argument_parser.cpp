@@ -94,8 +94,16 @@ namespace ccwc
 
         std::span<char*> safeArgs(argv, static_cast<std::size_t>(argc));
 
+        bool firstArgument = true;
+
         for (char* arg : safeArgs)
         {
+            if (firstArgument)
+            {
+                firstArgument = false;
+                continue; // skip the first argument as it is the program name
+            }
+
             std::string_view argView(arg);
 
             if (argView.starts_with("-"))
