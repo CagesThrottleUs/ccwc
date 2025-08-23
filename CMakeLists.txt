@@ -19,11 +19,22 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # =============
 # Sources
 # =============
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
+# Source files (.cpp)
+set(SOURCES
     src/main.cpp
+    src/argument_parser/argument_parser.cpp
+    src/output_formatter/output_formatter.cpp
 )
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+# Header files (.hpp)
+set(HEADERS
+    src/algorithm/counter.hpp
+    src/algorithm/universal_input_stream.hpp
+    src/argument_parser/argument_parser.hpp
+    src/output_formatter/output_formatter.hpp
+)
+
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
