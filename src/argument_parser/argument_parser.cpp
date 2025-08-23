@@ -1,5 +1,7 @@
 #include "argument_parser.hpp"
 
+#include "exception/exception.hpp"
+
 #include <span>
 #include <string_view>
 
@@ -16,19 +18,39 @@ namespace ccwc::argument_parser
 
     auto Arguments::addInputFile(const std::string& filename) -> void
     {
-        m_input_streams.emplace_back(filename);
+        InputDataObject                       inputDataObject;
+        ccwc::algorithm::UniversalInputStream inputStream;
+        HealthStatus                          healthStatus;
+        try
+        {
+            inputStream                   = ccwc::algorithm::UniversalInputStream(filename);
+            inputDataObject.mInputStream  = std::move(inputStream);
+            inputDataObject.mHealthStatus = HealthStatus(true, "");
+            m_input_data_objects.emplace_back(std::move(inputDataObject));
+        }
+        catch (const ccwc::exception::FileOperationException& e)
+        {
+            inputStream                   = ccwc::algorithm::UniversalInputStream();
+            inputDataObject.mInputStream  = std::move(inputStream);
+            inputDataObject.mHealthStatus = HealthStatus(false, e.what());
+            m_input_data_objects.emplace_back(std::move(inputDataObject));
+        }
     }
 
     auto Arguments::addStdin() -> void
     {
-        if (m_input_streams.empty())
+        if (m_input_data_objects.empty())
         {
-            m_input_streams.emplace_back();
+            InputDataObject inputDataObject;
+            inputDataObject.mInputStream  = ccwc::algorithm::UniversalInputStream();
+            inputDataObject.mHealthStatus = HealthStatus(true, "");
+            m_input_data_objects.emplace_back(std::move(inputDataObject));
         }
-        else
-        {
-            // NOOP
-        }
+    }
+
+    auto Arguments::inputDataObjects() const -> const std::vector<InputDataObject>&
+    {
+        return m_input_data_objects;
     }
 
 } // namespace ccwc::argument_parser
