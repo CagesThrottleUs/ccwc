@@ -86,4 +86,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Boost::iostreams)
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 
 # Install sample/test.txt next to the binary
-install(FILES sample/test.txt DESTINATION bin)
+# Only install test.txt if it exists
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/sample/test.txt")
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/sample/test.txt" DESTINATION bin)
+else()
+    message(WARNING "sample/test.txt not found — skipping its installation")
+endif()
