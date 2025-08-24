@@ -4,6 +4,7 @@
 #include "algorithm/universal_input_stream.hpp"
 #include "output_formatter/output_formatter.hpp"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -49,7 +50,7 @@ namespace ccwc::argument_parser
         /**
          * @brief The input stream.
          */
-        ccwc::algorithm::UniversalInputStream mInputStream;
+        std::unique_ptr<ccwc::algorithm::UniversalInputStream> mInputStream;
 
         /**
          * @brief The health status of the input stream.

@@ -1,5 +1,6 @@
 #include "argument_parser.hpp"
 
+#include "algorithm/universal_input_stream.hpp"
 #include "exception/exception.hpp"
 
 #include <span>
@@ -18,19 +19,19 @@ namespace ccwc::argument_parser
 
     auto Arguments::addInputFile(const std::string& filename) -> void
     {
-        InputDataObject                       inputDataObject;
-        ccwc::algorithm::UniversalInputStream inputStream;
-        HealthStatus                          healthStatus;
+        InputDataObject                                        inputDataObject;
+        std::unique_ptr<ccwc::algorithm::UniversalInputStream> inputStream{nullptr};
+        HealthStatus                                           healthStatus;
         try
         {
-            inputStream                   = ccwc::algorithm::UniversalInputStream(filename);
+            inputStream                   = ccwc::algorithm::createInputStream(filename);
             inputDataObject.mInputStream  = std::move(inputStream);
             inputDataObject.mHealthStatus = HealthStatus(true, "");
             m_input_data_objects.emplace_back(std::move(inputDataObject));
         }
         catch (const ccwc::exception::FileOperationException& e)
         {
-            inputStream                   = ccwc::algorithm::UniversalInputStream();
+            inputStream                   = ccwc::algorithm::createInputStream();
             inputDataObject.mInputStream  = std::move(inputStream);
             inputDataObject.mHealthStatus = HealthStatus(false, e.what());
             m_input_data_objects.emplace_back(std::move(inputDataObject));
@@ -42,7 +43,7 @@ namespace ccwc::argument_parser
         if (m_input_data_objects.empty())
         {
             InputDataObject inputDataObject;
-            inputDataObject.mInputStream  = ccwc::algorithm::UniversalInputStream();
+            inputDataObject.mInputStream  = ccwc::algorithm::createInputStream();
             inputDataObject.mHealthStatus = HealthStatus(true, "");
             m_input_data_objects.emplace_back(std::move(inputDataObject));
         }
