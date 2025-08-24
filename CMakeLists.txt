@@ -74,6 +74,12 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
 endif()
 
 # ============
+# Dependencies
+# ============
+find_package(Boost REQUIRED COMPONENTS iostreams CONFIG)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::iostreams)
+
+# ============
 # Installation
 # ============
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
