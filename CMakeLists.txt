@@ -30,6 +30,7 @@ set(SOURCES
 # Header files (.hpp)
 set(HEADERS
     src/algorithm/counter.hpp
+    src/algorithm/counter_state_machine.hpp
     src/algorithm/universal_input_stream.hpp
     src/argument_parser/argument_parser.hpp
     src/output_formatter/output_formatter.hpp
