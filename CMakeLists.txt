@@ -22,6 +22,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Source files (.cpp)
 set(SOURCES
     src/main.cpp
+    src/algorithm/universal_input_stream.cpp
     src/argument_parser/argument_parser.cpp
     src/output_formatter/output_formatter.cpp
 )
@@ -83,3 +84,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Boost::iostreams)
 # Installation
 # ============
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+
+# Install sample/test.txt next to the binary
+install(FILES sample/test.txt DESTINATION bin)
