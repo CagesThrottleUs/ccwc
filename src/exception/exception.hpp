@@ -30,7 +30,33 @@ namespace ccwc::exception
         }
 
         /**
-         * 
+         * @brief Get the error message.
+         */
+        [[nodiscard]] auto what() const noexcept -> const char* override
+        {
+            return m_message.c_str();
+        }
+    };
+
+    class InvalidArgumentException : public std::exception
+    {
+      private:
+        /**
+         * @brief The error message.
+         */
+        std::string m_message;
+
+      public:
+        /**
+         * @brief Constructor for the InvalidArgumentException class.
+         * @param message The error message.
+         */
+        explicit InvalidArgumentException(std::string message) : m_message(std::move(message))
+        {
+        }
+
+        /**
+         * @brief Get the error message.
          */
         [[nodiscard]] auto what() const noexcept -> const char* override
         {
