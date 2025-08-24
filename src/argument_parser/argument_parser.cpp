@@ -85,6 +85,11 @@ namespace ccwc
                 args.addFormattingOptions(
                     ccwc::output_format_options::OutputFormatOptions::FORMAT_MULTIBYTE);
             }
+            else
+            {
+                throw ccwc::exception::InvalidArgumentException("Invalid argument: " +
+                                                                std::string(arg));
+            }
         }
     } // namespace detail
 
