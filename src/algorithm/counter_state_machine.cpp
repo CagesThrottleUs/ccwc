@@ -171,7 +171,7 @@ namespace ccwc::algorithm
                 {
                     throw ccwc::exception::FileOperationException("Failed to create UTF-8 locale");
                 }
-                m_buffer.reserve(MB_CUR_MAX); // dynamic buffer
+                m_buffer.reserve(static_cast<std::size_t>(MB_CUR_MAX)); // dynamic buffer
             }
 
             /**
@@ -310,7 +310,15 @@ namespace ccwc::algorithm
 
     } // namespace detail
 
-    inline auto buildCounterStateMachineChain() -> std::unique_ptr<CounterStateMachine>
+    /**
+     * @brief Build a chain of CounterStateMachine objects.
+     *
+     * Order of processing:
+     *   LinesStateMachine → WordsStateMachine → MultibyteStateMachine → BytesStateMachine
+     *
+     * @return A unique_ptr to the head of the chain.
+     */
+    auto buildCounterStateMachineChain() -> std::unique_ptr<CounterStateMachine>
     {
         auto lines = std::make_unique<detail::LineStateMachine>();
 

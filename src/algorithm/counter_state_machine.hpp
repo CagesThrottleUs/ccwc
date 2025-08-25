@@ -89,7 +89,7 @@ namespace ccwc::algorithm
      *
      * @return A unique_ptr to the head of the chain.
      */
-    inline auto buildCounterStateMachineChain() -> std::unique_ptr<CounterStateMachine>;
+    auto buildCounterStateMachineChain() -> std::unique_ptr<CounterStateMachine>;
 
 } // namespace ccwc::algorithm
 
