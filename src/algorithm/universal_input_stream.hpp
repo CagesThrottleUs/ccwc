@@ -1,133 +1,76 @@
 #ifndef CCWC_ALGORITHM_UNIVERSAL_INPUT_STREAM_HPP
 #define CCWC_ALGORITHM_UNIVERSAL_INPUT_STREAM_HPP
 
-#include <fstream>
-#include <iostream>
+#include <cstddef>
+#include <memory>
+#include <optional>
 #include <string>
-#include <variant>
 
 namespace ccwc::algorithm
 {
 
     /**
      * @brief A class that can be used to read from a file or stdin.
+     *
+     * This class is responsible for reading from a file or stdin. When the scenario is file, it
+     * will read the file via the kernel provided memory mapped I/O while only providing the
+     * interface for a string stream.
+     *
+     * For smaller files, which is less than 100MB, it will read the file into memory and provide
+     * the interface for a string stream.
+     *
+     * In case of stdin, it will read from the standard input stream but will also be processed as
+     * string stream.
      */
     class UniversalInputStream
     {
-      private:
-        /**
-         * @brief The stream to read from.
-         */
-        std::variant<std::ifstream, std::istream*> m_stream;
-
-        /**
-         * @brief The filename of the stream.
-         */
-        std::string m_filename;
-
       public:
         /**
-         * @brief Constructor for file input.
-         * @param filename The filename of the file to read from.
+         * @brief Destructor for the UniversalInputStream class.
          */
-        explicit UniversalInputStream(const std::string& filename) : m_filename(filename)
-        {
-
-            std::ifstream fileStream(filename, std::ios::binary);
-            if (!fileStream.is_open())
-            {
-                throw std::runtime_error("Cannot open file: " + filename);
-            }
-            m_stream = std::move(fileStream);
-        }
+        virtual ~UniversalInputStream() = default;
 
         /**
-         * @brief Constructor for stdin.
+         * @brief Get the logical name (e.g., filename or "<stdin>")
          */
-        UniversalInputStream() : m_stream(&std::cin), m_filename("<stdin>")
-        {
-        }
+        virtual std::string name() const = 0;
 
         /**
-         * @brief Get the underlying stream non-const version.
-         * @return The underlying stream.
+         * @brief Returns true if this stream is stdin.
          */
-        auto stream() -> std::istream&
-        {
-            return std::visit(
-                [](auto&& arg) -> std::istream&
-                {
-                    using T = std::decay_t<decltype(arg)>;
-                    if constexpr (std::is_same_v<T, std::ifstream>)
-                    {
-                        return arg;
-                    }
-                    else
-                    {
-                        return *arg; // std::istream*
-                    }
-                },
-                m_stream);
-        }
+        virtual bool isStdin() const = 0;
 
         /**
-         * @brief Get the underlying stream const version.
-         * @return The underlying stream.
+         * @brief Returns the next byte from the stream.
+         * For stdin this may be unavailable, so return std::nullopt.
+         * std::nullopt means the end of the stream has been reached.
          */
-        auto stream() const -> const std::istream&
-        {
-            return std::visit(
-                [](auto&& arg) -> const std::istream&
-                {
-                    using T = std::decay_t<decltype(arg)>;
-                    if constexpr (std::is_same_v<T, std::ifstream>)
-                    {
-                        return arg;
-                    }
-                    else
-                    {
-                        return *arg; // std::istream*
-                    }
-                },
-                m_stream);
-        }
+        virtual std::optional<unsigned char> nextByte() = 0;
 
         /**
-         * @brief Get the name of the stream.
-         * @return The name of the stream.
+         * @brief Reset the stream to the beginning.
+         * @return True if the stream was reset successfully.
          */
-        auto name() const -> const std::string&
-        {
-            return m_filename;
-        }
+        virtual bool reset() = 0;
 
         /**
-         * @brief Check if the stream is stdin.
-         * @return True if the stream is stdin, false otherwise.
+         * @brief Check if the stream is still valid.
          */
-        auto isStdin() const -> bool
-        {
-            return std::holds_alternative<std::istream*>(m_stream);
-        }
-
-        /**
-         * @brief Check if the stream is good.
-         * @return True if the stream is good, false otherwise.
-         */
-        auto good() const -> bool
-        {
-            return stream().good();
-        }
-
-        /**
-         * @brief Check if the stream is good.
-         * @return True if the stream is good, false otherwise.
-         */
-        explicit operator bool() const
-        {
-            return good();
-        }
+        virtual bool good() const = 0;
     };
+
+    /**
+     * @brief Creates a new input stream for a file.
+     * @param filename The name of the file.
+     * @return A new input stream for the file.
+     */
+    auto createInputStream(const std::string& filename) -> std::unique_ptr<UniversalInputStream>;
+
+    /**
+     * @brief Creates a new input stream for stdin.
+     * @return A new input stream for stdin.
+     */
+    auto createInputStream() -> std::unique_ptr<UniversalInputStream>;
 } // namespace ccwc::algorithm
 
 #endif // CCWC_ALGORITHM_UNIVERSAL_INPUT_STREAM_HPP

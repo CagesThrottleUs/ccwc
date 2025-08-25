@@ -11,6 +11,7 @@ namespace ccwc::algorithm
      */
     struct Counter
     {
+      public:
         std::size_t bytes{0};
         std::size_t words{0};
         std::size_t lines{0};

@@ -22,6 +22,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Source files (.cpp)
 set(SOURCES
     src/main.cpp
+    src/algorithm/counter_state_machine.cpp
+    src/algorithm/universal_input_stream.cpp
     src/argument_parser/argument_parser.cpp
     src/output_formatter/output_formatter.cpp
 )
@@ -29,6 +31,8 @@ set(SOURCES
 # Header files (.hpp)
 set(HEADERS
     src/algorithm/counter.hpp
+    src/algorithm/counter_state_machine.hpp
+    src/algorithm/processor.hpp
     src/algorithm/universal_input_stream.hpp
     src/argument_parser/argument_parser.hpp
     src/output_formatter/output_formatter.hpp
@@ -74,6 +78,20 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
 endif()
 
 # ============
+# Dependencies
+# ============
+find_package(Boost REQUIRED COMPONENTS iostreams CONFIG)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::iostreams)
+
+# ============
 # Installation
 # ============
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+
+# Install sample/test.txt next to the binary
+# Only install test.txt if it exists
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/sample/test.txt")
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/sample/test.txt" DESTINATION bin)
+else()
+    message(WARNING "sample/test.txt not found — skipping its installation")
+endif()
