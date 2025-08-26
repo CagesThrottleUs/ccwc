@@ -40,6 +40,8 @@ namespace ccwc::algorithm
                 stateMachine->updateState(byte.value());
                 stateMachine->updateCounter(counter);
             }
+            // Finalize to handle any remaining buffered data
+            stateMachine->finalize(counter);
             stateMachine->reset();
             counters.push_back(counter);
         }
