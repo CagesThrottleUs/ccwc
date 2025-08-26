@@ -80,8 +80,8 @@ endif()
 # ============
 # Dependencies
 # ============
-find_package(Boost REQUIRED COMPONENTS iostreams CONFIG)
-target_link_libraries(${PROJECT_NAME} PRIVATE Boost::iostreams)
+find_package(Boost REQUIRED COMPONENTS iostreams locale CONFIG)
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::iostreams Boost::locale)
 
 # ============
 # Installation

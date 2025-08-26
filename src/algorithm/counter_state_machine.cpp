@@ -3,10 +3,12 @@
 #include "counter.hpp"
 #include "exception/exception.hpp"
 
+#include <boost/locale.hpp>
 #include <cctype>
-#include <clocale>
-#include <cwchar>
+#include <cstdlib>
+#include <locale>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace ccwc::algorithm
@@ -56,6 +58,11 @@ namespace ccwc::algorithm
             {
                 m_byte = 0;
                 passToNextReset();
+            }
+
+            void finalize(Counter& counter) override
+            {
+                passToNextFinalize(counter);
             }
         };
 
@@ -116,153 +123,160 @@ namespace ccwc::algorithm
                 m_inWord = false;
                 passToNextReset();
             }
+
+            void finalize(Counter& counter) override
+            {
+                passToNextFinalize(counter);
+            }
         };
 
-        constexpr auto UTF8_LOCALE               = "en_US.UTF-8";
-        constexpr auto INVALID_MB_CHAR_RESULT    = static_cast<std::size_t>(-1);
-        constexpr auto INCOMPLETE_MB_CHAR_RESULT = static_cast<std::size_t>(-2);
-
         /**
-         * @brief Counts multibyte characters using mbstate_t + mbrtowc_l.
+         * @brief CounterStateMachine implementation for counting Unicode code points using
+         * boost.locale.
          *
-         * Thread-safe because it uses an explicit UTF-8 locale.
-         * Works in a chain of responsibility.
+         * Reads bytes one by one, buffers them into a UTF-8 string efficiently,
+         * then converts the buffered string to a wide string using boost.locale in finalize(),
+         * adding the code point count to the counter.
          */
         class MultibyteStateMachine : public CounterStateMachine
         {
           private:
-            /**
-             * @brief The current state of the state machine.
-             */
-            mbstate_t m_state{{}};
+            std::string m_buffer; // Buffer UTF-8 bytes from input
+            std::locale m_locale; // Locale for conversion
 
-            /**
-             * @brief The buffer for the current multibyte character.
-             */
-            std::vector<char> m_buffer;
+            static constexpr std::size_t   MAX_BUFFER_SIZE = 4096;
+            static constexpr unsigned char UTF8_MASK_1     = 0x80; // 1000 0000
+            static constexpr unsigned char UTF8_MASK_3     = 0xE0; // 1110 0000
+            static constexpr unsigned char UTF8_MASK_4     = 0xF0; // 1111 0000
+            static constexpr unsigned char UTF8_MASK_5     = 0xF8; // 1111 1000
+            static constexpr unsigned char UTF8_CONT_MASK  = 0xC0; // 1100 0000
+            static constexpr unsigned char UTF8_CONT_VALUE = 0x80; // 1000 0000
 
-            /**
-             * @brief The number of bytes in the current multibyte character.
-             */
-            size_t m_charBytes{0};
+            // Helper to determine UTF-8 character length from first byte
+            [[nodiscard]] static auto utf8CharLength(unsigned char firstByte) -> std::size_t
+            {
+                if ((firstByte & UTF8_MASK_1) == 0x00)
+                {
+                    return 1; // ASCII
+                }
 
-            /**
-             * @brief Whether the current multibyte character is complete.
-             */
-            bool m_charComplete{false};
+                if ((firstByte & UTF8_MASK_3) == UTF8_CONT_MASK)
+                {
+                    return 2; // 2-byte sequence
+                }
 
-            /**
-             * @brief Whether the current multibyte character is invalid.
-             */
-            bool m_invalid{false};
+                if ((firstByte & UTF8_MASK_4) == UTF8_MASK_3)
+                {
+                    return 3; // 3-byte sequence
+                }
 
-            /**
-             * @brief The locale for the state machine.
-             */
-            locale_t m_locale;
+                if ((firstByte & UTF8_MASK_5) == UTF8_MASK_4)
+                {
+                    return 4; // 4-byte sequence
+                }
+
+                return 0; // Invalid leading byte
+            }
+
+            // Returns number of bytes corresponding to all full UTF-8 characters at the start of
+            // buffer
+            [[nodiscard]] auto fullCharsByteCount() const -> std::size_t
+            {
+                std::size_t pos = 0;
+                std::size_t len = m_buffer.size();
+
+                while (pos < len)
+                {
+                    auto        firstByte = static_cast<unsigned char>(m_buffer[pos]);
+                    std::size_t charLen   = utf8CharLength(firstByte);
+
+                    if (charLen == 0 || pos + charLen > len)
+                    {
+                        // Either invalid start byte or incomplete char
+                        break;
+                    }
+                    // Check continuation bytes validity
+                    for (std::size_t i = 1; i < charLen; ++i)
+                    {
+                        auto ele = static_cast<unsigned char>(m_buffer[pos + i]);
+                        if ((ele & UTF8_CONT_MASK) != UTF8_CONT_VALUE)
+                        {
+                            // Invalid continuation byte
+                            return pos;
+                        }
+                    }
+                    pos += charLen;
+                }
+                return pos; // number of bytes encompassing full UTF-8 chars from start
+            }
+
+            void flushBuffer(Counter& counter)
+            {
+                if (m_buffer.empty())
+                {
+                    return;
+                }
+
+                std::size_t flushBytes = fullCharsByteCount();
+
+                if (flushBytes == 0)
+                {
+                    return;
+                }
+
+                try
+                {
+                    std::string encoding = std::use_facet<boost::locale::info>(m_locale).encoding();
+                    std::wstring wideStr = boost::locale::conv::to_utf<wchar_t>(
+                        m_buffer.substr(0, flushBytes), encoding);
+                    counter.multibyte += wideStr.size();
+                    m_buffer.erase(0, flushBytes);
+                }
+                catch (const boost::locale::conv::conversion_error&)
+                {
+                    counter.multibyte += 1;
+                    m_buffer.clear();
+                }
+            }
 
           public:
-            /**
-             * @brief Constructor for the MultibyteStateMachine class.
-             */
-            MultibyteStateMachine() : m_locale(newlocale(LC_CTYPE_MASK, UTF8_LOCALE, nullptr))
+            // Construct with locale built from system/user environment
+            MultibyteStateMachine() : m_locale(boost::locale::generator().generate(""))
             {
-                if (m_locale == nullptr)
-                {
-                    throw ccwc::exception::FileOperationException("Failed to create UTF-8 locale");
-                }
-                m_buffer.reserve(static_cast<std::size_t>(MB_CUR_MAX)); // dynamic buffer
             }
 
-            /**
-             * @brief Destructor for the MultibyteStateMachine class.
-             */
-            ~MultibyteStateMachine() override
-            {
-                if (m_locale != nullptr)
-                {
-                    freelocale(m_locale);
-                }
-            }
-
-            // Deleted copy/move to avoid accidental sharing of mbstate_t and locale
-            MultibyteStateMachine(const MultibyteStateMachine&)                    = delete;
-            auto operator=(const MultibyteStateMachine&) -> MultibyteStateMachine& = delete;
-            MultibyteStateMachine(MultibyteStateMachine&&)                         = delete;
-            auto operator=(MultibyteStateMachine&&) -> MultibyteStateMachine&      = delete;
-
-            /**
-             * @brief Update the state of the state machine.
-             * @param byte The byte to process.
-             */
+            // Feed one byte into the buffer
             void updateState(unsigned char byte) override
             {
                 m_buffer.push_back(static_cast<char>(byte));
-
-                wchar_t     wideChar{};
-                std::size_t result =
-                    mbrtowc_l(&wideChar, m_buffer.data(), m_buffer.size(), &m_state, m_locale);
-
-                if (result == INVALID_MB_CHAR_RESULT)
-                {
-                    // Invalid sequence: reset
-                    m_invalid = true;
-                    m_buffer.clear();
-                    m_state = {};
-                }
-                else if (result == INCOMPLETE_MB_CHAR_RESULT)
-                {
-                    // Incomplete sequence: wait for more bytes
-                    return;
-                }
-                else
-                {
-                    // Completed character
-                    m_charComplete = true;
-                    m_charBytes    = result;
-                    m_buffer.erase(m_buffer.begin(),
-                                   m_buffer.begin() +
-                                       static_cast<std::vector<char>::difference_type>(result));
-                }
-
-                // Pass first byte to next FSM if available
-                if (!m_invalid && !m_buffer.empty())
-                {
-                    passToNextState(static_cast<unsigned char>(m_buffer[0]));
-                }
+                passToNextState(byte);
             }
 
-            /**
-             * @brief Update the counter based on the current state.
-             * @param counter The counter to update.
-             */
+            // No per-byte counting here, counting happens on finalize()
             void updateCounter(Counter& counter) override
             {
-                if (m_charComplete)
+                if (m_buffer.size() >= MAX_BUFFER_SIZE)
                 {
-                    if (m_charBytes > 1)
-                    {
-                        counter.multibyte++;
-                    }
-
-                    m_charComplete = false;
+                    flushBuffer(counter);
                 }
-
                 passToNextCounter(counter);
             }
 
-            /**
-             * @brief Reset the state machine.
-             */
             void reset() override
             {
                 m_buffer.clear();
-                m_charComplete = false;
-                m_charBytes    = 0;
-                m_invalid      = false;
-                m_state        = {};
-
                 passToNextReset();
+            }
+
+            void finalize(Counter& counter) override
+            {
+                flushBuffer(counter);
+                if (!m_buffer.empty())
+                {
+                    counter.multibyte += 1;
+                    m_buffer.clear();
+                }
+                passToNextFinalize(counter);
             }
         };
 
@@ -305,6 +319,11 @@ namespace ccwc::algorithm
             {
                 m_byte = 0;
                 passToNextReset();
+            }
+
+            void finalize(Counter& counter) override
+            {
+                passToNextFinalize(counter);
             }
         };
 
