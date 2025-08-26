@@ -35,6 +35,7 @@ set(HEADERS
     src/algorithm/processor.hpp
     src/algorithm/universal_input_stream.hpp
     src/argument_parser/argument_parser.hpp
+    src/argument_parser/input_objects.hpp
     src/output_formatter/output_formatter.hpp
 )
 
