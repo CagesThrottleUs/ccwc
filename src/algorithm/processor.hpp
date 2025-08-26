@@ -1,7 +1,7 @@
 #ifndef CCWC_ALGORITHM_PROCESSOR_HPP
 #define CCWC_ALGORITHM_PROCESSOR_HPP
 
-#include "argument_parser/argument_parser.hpp"
+#include "argument_parser/input_objects.hpp"
 #include "counter.hpp"
 #include "counter_state_machine.hpp"
 
@@ -27,8 +27,9 @@ namespace ccwc::algorithm
         for (const auto& inputDataObject : inputDataObjects)
         {
             auto counter = Counter();
-            while (auto byte = inputDataObject.mInputStream->nextByte())
+            while (inputDataObject.mInputStream->good())
             {
+                auto byte = inputDataObject.mInputStream->nextByte();
                 if (!byte.has_value())
                 {
                     break;
