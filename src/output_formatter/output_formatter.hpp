@@ -2,6 +2,7 @@
 #define CCWC_OUTPUT_FORMATTER_HPP
 
 #include "algorithm/counter.hpp"
+#include "argument_parser/input_objects.hpp"
 
 #include <cstdint>
 #include <memory>
@@ -38,11 +39,38 @@ namespace ccwc::output_format_options
          */
         std::unique_ptr<FormatHandler> m_next{nullptr};
 
+        /**
+         * @brief The maximum length of the number.
+         */
+        std::size_t m_max_len_of_num;
+
+        /**
+         * @brief Whether the handler is enabled.
+         */
+        bool m_enabled{true};
+
+      protected:
+        /**
+         * @brief Handle the counter and return the output.
+         *
+         * @param counter The counter to handle.
+         * @return The output string.
+         */
+        virtual auto handle(const ccwc::algorithm::Counter& counter) -> std::string = 0;
+
       public:
         /**
          * @brief Constructor for the FormatHandler class.
          */
-        FormatHandler() = default;
+        FormatHandler(std::size_t max_len_of_num)
+            : m_next(nullptr), m_max_len_of_num(max_len_of_num), m_enabled(true)
+        {
+        }
+
+        FormatHandler(std::size_t max_len_of_num, bool enabled)
+            : m_next(nullptr), m_max_len_of_num(max_len_of_num), m_enabled(enabled)
+        {
+        }
 
         /**
          * @brief Disable copy operations (not suitable for chain of responsibility)
@@ -81,21 +109,22 @@ namespace ccwc::output_format_options
         /**
          * @brief Handle the counter and return the output.
          *
-         * @param counter The counter to handle.
-         * @return The output string.
-         */
-        virtual auto handle(const ccwc::algorithm::Counter& counter) -> std::string = 0;
-
-        /**
-         * @brief Handle the counter and return the output.
-         *
          * @param output The output string.
          * @param counter The counter to handle.
          * @return The updated output string.
          */
         auto doHandle(std::string& output, const ccwc::algorithm::Counter& counter) -> std::string
         {
-            output += this->handle(counter);
+            if (m_enabled)
+            {
+                std::string handle_string = this->handle(counter);
+                std::size_t total_spaces_to_add =
+                    1 + (m_max_len_of_num + 1) - handle_string.length();
+                std::string normalized_handle_string =
+                    std::string(total_spaces_to_add, ' ') + handle_string;
+
+                output += normalized_handle_string;
+            }
             if (m_next != nullptr)
             {
                 return m_next->doHandle(output, counter);
@@ -126,21 +155,19 @@ namespace ccwc::output_formatter
          */
         std::set<ccwc::output_format_options::OutputFormatOptions> m_format_options;
 
-        /**
-         * @brief The outputs to format.
-         */
-        std::vector<ccwc::algorithm::Counter> m_outputs_to_format;
+        auto buildFormatChain(std::size_t max_len_of_num) const
+            -> std::unique_ptr<ccwc::output_format_options::FormatHandler>;
 
-        /**
-         * @brief The total counter for all the files.
-         */
-        ccwc::algorithm::Counter m_total_counter;
+        auto IsOptionEnabled(ccwc::output_format_options::OutputFormatOptions option) const -> bool
+        {
+            return m_format_options.contains(option);
+        }
 
       public:
         /**
          * @brief Constructor for the OutputFormatter class.
          */
-        OutputFormatter() : m_format_options({}), m_outputs_to_format({})
+        OutputFormatter() : m_format_options({})
         {
         }
 
@@ -152,18 +179,19 @@ namespace ccwc::output_formatter
         auto addOption(ccwc::output_format_options::OutputFormatOptions option) -> void;
 
         /**
-         * @brief Add a counter to the outputs to format.
-         *
-         * @param counter The counter to add.
-         */
-        auto addCounter(const ccwc::algorithm::Counter& counter) -> void;
-
-        /**
          * @brief Format the file.
          *
          * @return The formatted output.
          */
-        [[nodiscard]] auto formatFile() const -> std::string;
+        [[nodiscard]] auto formatFile(
+            const std::vector<ccwc::algorithm::Counter>&               counters,
+            const std::vector<ccwc::argument_parser::InputDataObject>& inputDataObjects) const
+            -> std::string;
+
+        /**
+         * @brief Normalize the formatting options.
+         */
+        auto normalizeFormattingOptions() -> void;
     };
 
 } // namespace ccwc::output_formatter
