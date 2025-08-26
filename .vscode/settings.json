@@ -51,6 +51,11 @@
     "variant": "cpp",
     "vector": "cpp",
     "cstddef": "cpp",
-    "fstream": "cpp"
+    "fstream": "cpp",
+    "set": "cpp"
+  },
+  "cmake.debugConfig": {
+    "args": ["${workspaceFolder}/out/install/clang-asan/bin/test.txt"],
+    "cwd": "${workspaceFolder}",
   }
 }
