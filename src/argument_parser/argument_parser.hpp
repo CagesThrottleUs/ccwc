@@ -1,62 +1,13 @@
 #ifndef CCWC_ARGUMENT_PARSER_HPP
 #define CCWC_ARGUMENT_PARSER_HPP
 
-#include "algorithm/universal_input_stream.hpp"
+#include "argument_parser/input_objects.hpp"
 #include "output_formatter/output_formatter.hpp"
 
-#include <memory>
-#include <string>
 #include <vector>
 
 namespace ccwc::argument_parser
 {
-
-    /**
-     * @brief Health status of the arguments.
-     */
-    struct HealthStatus
-    {
-        /**
-         * @brief Whether the arguments are healthy.
-         */
-        bool mIsHealthy{true};
-
-        /**
-         * @brief The error message if the arguments are not healthy.
-         */
-        std::string mErrorMessage;
-
-        /**
-         * @brief Constructor for the HealthStatus class.
-         */
-        HealthStatus() = default;
-
-        /**
-         * @brief Constructor for the HealthStatus class.
-         * @param isHealthy Whether the arguments are healthy.
-         * @param errorMessage The error message if the arguments are not healthy.
-         */
-        HealthStatus(bool isHealthy, std::string errorMessage)
-            : mIsHealthy(isHealthy), mErrorMessage(std::move(errorMessage))
-        {
-        }
-    };
-
-    /**
-     * @brief Input data object.
-     */
-    struct InputDataObject
-    {
-        /**
-         * @brief The input stream.
-         */
-        std::unique_ptr<ccwc::algorithm::UniversalInputStream> mInputStream;
-
-        /**
-         * @brief The health status of the input stream.
-         */
-        HealthStatus mHealthStatus;
-    };
 
     /**
      * @brief Arguments class that will be used to store the arguments passed to the program.
@@ -112,6 +63,16 @@ namespace ccwc::argument_parser
          * @brief Get the input data objects.
          */
         [[nodiscard]] auto inputDataObjects() const -> const std::vector<InputDataObject>&;
+
+        /**
+         * @brief Format the output.
+         */
+        auto formatOutput(const std::vector<ccwc::algorithm::Counter>& counters) const -> void;
+
+        /**
+         * @brief Normalize the formatting options.
+         */
+        auto normalizeFormattingOptions() -> void;
     };
 
 } // namespace ccwc::argument_parser

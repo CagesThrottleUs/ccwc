@@ -3,6 +3,7 @@
 #include "algorithm/universal_input_stream.hpp"
 #include "exception/exception.hpp"
 
+#include <iostream>
 #include <span>
 #include <string_view>
 
@@ -52,6 +53,17 @@ namespace ccwc::argument_parser
     auto Arguments::inputDataObjects() const -> const std::vector<InputDataObject>&
     {
         return m_input_data_objects;
+    }
+
+    auto Arguments::formatOutput(const std::vector<ccwc::algorithm::Counter>& counters) const
+        -> void
+    {
+        std::cout << m_output_formatter.formatFile(counters, m_input_data_objects) << '\n';
+    }
+
+    auto Arguments::normalizeFormattingOptions() -> void
+    {
+        m_output_formatter.normalizeFormattingOptions();
     }
 
 } // namespace ccwc::argument_parser
@@ -123,6 +135,7 @@ namespace ccwc
         }
 
         args.addStdin();
+        args.normalizeFormattingOptions();
 
         return args;
     }
