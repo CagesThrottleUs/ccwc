@@ -45,6 +45,14 @@ namespace ccwc::algorithm
             }
         }
 
+        void passToNextFinalize(Counter& counter)
+        {
+            if (m_next)
+            {
+                m_next->finalize(counter);
+            }
+        }
+
       public:
         CounterStateMachine()          = default;
         virtual ~CounterStateMachine() = default;
@@ -68,6 +76,11 @@ namespace ccwc::algorithm
          * @brief Reset internal state of FSM.
          */
         virtual void reset() = 0;
+
+        /**
+         * @brief Finalize processing and handle any remaining buffered data.
+         */
+        virtual void finalize(Counter& counter) = 0;
 
         /**
          * @brief Link the next state machine in the chain.
