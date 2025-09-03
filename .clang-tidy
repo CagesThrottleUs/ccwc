@@ -17,8 +17,7 @@ WarningsAsErrors: >
   modernize-*,
   performance-*
 
-HeaderFilterRegex: '^(src|include)/'
-AnalyzeTemporaryDtors: false
+HeaderFilterRegex: '^(src|include)/.*'
 SystemHeaders: false
 UseColor: true
 FormatStyle: file
