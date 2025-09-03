@@ -161,11 +161,14 @@ namespace ccwc::output_formatter
 
     auto OutputFormatter::normalizeFormattingOptions() -> void
     {
-        if (m_format_options.empty())
+        if (this->m_format_options.empty())
         {
-            m_format_options.insert(ccwc::output_format_options::OutputFormatOptions::FORMAT_LINES);
-            m_format_options.insert(ccwc::output_format_options::OutputFormatOptions::FORMAT_WORDS);
-            m_format_options.insert(ccwc::output_format_options::OutputFormatOptions::FORMAT_BYTES);
+            this->m_format_options.insert(
+                ccwc::output_format_options::OutputFormatOptions::FORMAT_LINES);
+            this->m_format_options.insert(
+                ccwc::output_format_options::OutputFormatOptions::FORMAT_WORDS);
+            this->m_format_options.insert(
+                ccwc::output_format_options::OutputFormatOptions::FORMAT_BYTES);
         }
     }
 } // namespace ccwc::output_formatter
