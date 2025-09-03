@@ -67,16 +67,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
     if (CLANG_TIDY_EXE)
         message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
 
-        # Important: don't use -xc++ (CMake misplaces it),
-        # instead just force std and language mode directly
-        set(CLANG_TIDY_ARGS
-            --quiet
-            --extra-arg=-std=c++20
-            --extra-arg=-xc++
-        )
-
         # Apply tidy to all targets unless overridden
-        set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};${CLANG_TIDY_ARGS}")
+        set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};")
     else()
         message(WARNING "clang-tidy not found — static analysis disabled")
     endif()
