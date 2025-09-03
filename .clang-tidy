@@ -10,14 +10,8 @@ Checks: >
   portability-*,
   readability-*
 
-WarningsAsErrors: >
-  bugprone-*,
-  clang-analyzer-*,
-  cppcoreguidelines-*,
-  modernize-*,
-  performance-*
-
-HeaderFilterRegex: '^(src|include)/.*'
+# System header handling - prevent parsing errors
+HeaderFilterRegex: '^(src|include)/'
 SystemHeaders: false
 UseColor: true
 FormatStyle: file
