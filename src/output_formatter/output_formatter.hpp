@@ -155,7 +155,7 @@ namespace ccwc::output_formatter
          */
         std::set<ccwc::output_format_options::OutputFormatOptions> m_format_options;
 
-        auto buildFormatChain(std::size_t max_len_of_num) const
+        auto buildFormatChain(std::size_t maxLenOfNum) const
             -> std::unique_ptr<ccwc::output_format_options::FormatHandler>;
 
         auto IsOptionEnabled(ccwc::output_format_options::OutputFormatOptions option) const -> bool
