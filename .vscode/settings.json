@@ -52,10 +52,21 @@
     "vector": "cpp",
     "cstddef": "cpp",
     "fstream": "cpp",
-    "set": "cpp"
+    "set": "cpp",
+    "iterator": "cpp",
+    "__tree": "cpp",
+    "charconv": "cpp",
+    "codecvt": "cpp",
+    "forward_list": "cpp",
+    "iomanip": "cpp",
+    "map": "cpp",
+    "shared_mutex": "cpp",
+    "source_location": "cpp",
+    "typeindex": "cpp",
+    "algorithm": "cpp"
   },
   "cmake.debugConfig": {
     "args": ["${workspaceFolder}/out/install/clang-asan/bin/test.txt"],
-    "cwd": "${workspaceFolder}",
+    "cwd": "${workspaceFolder}"
   }
 }
