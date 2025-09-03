@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(ccwc
-    VERSION 0.1.1
+    VERSION 1.0.0
     DESCRIPTION "High-performance word count tool"
     LANGUAGES CXX
 )
