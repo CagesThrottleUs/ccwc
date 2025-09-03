@@ -79,12 +79,12 @@ namespace ccwc::algorithm
              */
             auto nextByte() -> std::optional<unsigned char> override
             {
-                int next_byte = std::cin.get();
-                if (next_byte == EOF)
+                int nextByte = std::cin.get();
+                if (nextByte == EOF)
                 {
                     return std::nullopt;
                 }
-                return static_cast<unsigned char>(next_byte);
+                return static_cast<unsigned char>(nextByte);
             }
 
             /**
@@ -189,10 +189,10 @@ namespace ccwc::algorithm
              */
             [[nodiscard]] auto nextByte() -> std::optional<unsigned char> override
             {
-                char next_byte{};
-                if (m_stream.get(next_byte))
+                char nextByte{};
+                if (m_stream.get(nextByte))
                 {
-                    return static_cast<unsigned char>(next_byte);
+                    return static_cast<unsigned char>(nextByte);
                 }
                 return std::nullopt;
             }
@@ -352,18 +352,18 @@ namespace ccwc::algorithm
 
     auto createInputStream(const std::string& filename) -> std::unique_ptr<UniversalInputStream>
     {
-        std::size_t file_size{0};
+        std::size_t fileSize{0};
 
         try
         {
-            file_size = std::filesystem::file_size(filename);
+            fileSize = std::filesystem::file_size(filename);
         }
         catch (const std::filesystem::filesystem_error& e)
         {
             throw ccwc::exception::FileOperationException(e.what());
         }
 
-        if (file_size < detail::MAX_MEMORY_MAPPED_FILE_SIZE)
+        if (fileSize < detail::MAX_MEMORY_MAPPED_FILE_SIZE)
         {
             return std::make_unique<detail::BufferedFileInputStream>(filename);
         }
